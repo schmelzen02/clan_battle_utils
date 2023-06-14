@@ -14,7 +14,7 @@ def import_questionnaire_phase4() -> dict:
                 key = key_line.group(1)
             elif key is not None:
                 # タイトル行の直後の行をアンケート結果行として読み込み
-                result[key] = re.sub(' \r?\n', '', line).split(' ')
+                result[key] = line.rstrip(' \r?\n').split(' ')
                 key = None
 
     return result
@@ -48,8 +48,9 @@ def import_today_route() -> dict:
 
 # 現在の周回数の読み込み
 def import_current_lap():
-    return {}
-
+    with open('#現在の周回数.txt', 'r', encoding='utf-8') as f:
+        return [line.rstrip('\r|\n') for line in f.readlines()]
+        
 print('4段階目アンケート結果を読み込んでいます...')
 questionnaire_phase4 = import_questionnaire_phase4()
 
@@ -68,9 +69,13 @@ current_lap = import_current_lap()
 # 以下デバッグ
 print()
 print('本日の凸状況')
-print(today_route)
+# print(today_route)
 
 print()
 print('4段階目アンケート結果')
 print(questionnaire_phase4)
+
+print()
+print('現在の周回数')
+# print(current_lap)
 
