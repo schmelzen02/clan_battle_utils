@@ -2,9 +2,13 @@ import re
 import datetime
 import calendar
 
-# 4段階目アンケート結果の読み込み
-# 「{'1物': ['player1', 'player2'], '2魔': ['player1', 'player3'], ...}」形式のdictを返却します
 def import_questionnaire_phase4() -> dict:
+    """
+    4段階目アンケート結果の読み込み
+
+    Returns:
+        dict: {'1物': ['player1', 'player2'], '2魔': ['player1', 'player3'], ...}
+    """
     print('4段階目アンケート結果を読み込んでいます...')
     result = {}
 
@@ -25,8 +29,13 @@ def import_questionnaire_phase4() -> dict:
 
     return result
 
-# 初日4段階目参加メンバーを取得
 def import_questionnaire_first_day() -> list:
+    """
+    初日4段階目参加メンバーを取得
+
+    Returns:
+        list: ['player1', 'player2']
+    """
     print('初日アンケート結果を読み込んでいます...')
     result = []
 
@@ -44,9 +53,13 @@ def import_questionnaire_first_day() -> list:
 
     return list(set(result))
 
-# 本日の凸状況の読み込み
-# 「{'player1': ['1物', '2魔', '5物'], ...}」形式のdictを返却します
 def import_today_route() -> dict:
+    """
+    本日の凸状況の読み込み
+
+    Returns:
+        dict: {'player1': ['1物', '2魔', '5物'], ...}
+    """
     print('本日の凸状況を読み込んでいます...')
     result = {}
 
@@ -67,8 +80,13 @@ def import_today_route() -> dict:
 
     return result
 
-# 現在の周回数の読み込み
 def import_current_lap() -> list:
+    """
+    現在の周回数の読み込み
+
+    Returns:
+        list: ['30.2', '31.0', ...]
+    """
     print('現在の周回数を読み込んでいます...')
 
     with open('#現在の周回数.txt', 'r', encoding='utf-8') as f:
