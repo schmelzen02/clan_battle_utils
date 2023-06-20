@@ -283,5 +283,6 @@ with open('全日程凸消化状況.csv', 'w') as f:
     writer.writerows(results)
 
 print()
-print(f'本日着地見込み: {aggregate_today_result}')
-print(f'最終着地見込み: {aggregate_all_result}')
+print(f'現在周回数    : {current_lap}')
+print(f'本日着地周回数: {aggregate_today_result}')
+print(f'最終着地周回数: {aggregate_all_result}')
