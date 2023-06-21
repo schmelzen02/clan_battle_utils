@@ -38,7 +38,9 @@ def import_questionnaire_phase4(expect_damages: dict) -> list:
                 is_player_line = False
 
     if len(result) != 90:
+        print()
         print(f'[WARN] 4段階目アンケートの回答数が異常です. #4段階目アンケート結果.txtの内容を確認してください. 回答数: {len(result)}')
+        print()
 
     return result
 
@@ -151,7 +153,9 @@ def import_route_change_info():
                 after = c_line.group(4)
                 result += [[day, player, before, after]]
             elif line[0] != '#':
+                print()
                 print(f'[WARN] 読み込みスキップ: {line}')
+                print()
         
         return result
 
@@ -210,7 +214,9 @@ def get_expects(current_day: int) -> list:
                 org_exists = True
                 break
         if not org_exists:
+            print()
             print(f'[WARN] 変更前の凸予定が存在しません. #凸先変更情報.txtの内容を確認してください: {change}')
+            print()
 
     return result
 
@@ -226,7 +232,9 @@ def get_results(expects: list, actuals: list, current_day: int) -> list:
                 expect_exists = True
                 break
         if not expect_exists:
+            print()
             print(f'[WARN] 予定にない凸実績が存在します. 各テキストファイルの内容を確認してください. 実績: {actual}')
+            print()
     
     expects.sort(key = lambda x: x[4])
 
