@@ -12,6 +12,10 @@ boss_hp = [
     25000,
 ]
 
+def get_player_short_name(player: str) -> str:
+    # プレイヤー名はアンケート結果にあわせ、1文字3byte換算で13byte目以降切り捨て
+    return player.encode('utf-8')[0:12].decode('utf-8', errors='ignore')
+
 def import_questionnaire_phase4(expect_damages: dict) -> list:
     """
     4段階目アンケート結果の読み込み
@@ -40,7 +44,6 @@ def import_questionnaire_phase4(expect_damages: dict) -> list:
     if len(result) != 90:
         print()
         print(f'[WARN] 4段階目アンケートの回答数が異常です. #4段階目アンケート結果.txtの内容を確認してください. 回答数: {len(result)}')
-        print()
 
     return result
 
@@ -82,8 +85,7 @@ def import_today_route() -> list:
         for line in f:
             route_line = re.match('^(.+) ([1-5][物魔].+|－)/([1-5][物魔].+|－)/([1-5][物魔].+|－) .+$', line)
             if route_line:
-                # プレイヤー名はアンケート結果にあわせ、1文字3byte換算で13byte目以降切り捨て
-                player = route_line.group(1).encode('utf-8')[0:12].decode('utf-8', errors='ignore')
+                player = get_player_short_name(route_line.group(1))
                 # 1凸目/2凸目/3凸目の本凸先を取得
                 route1 = route_line.group(2)[0:2]
                 if route1 != '－':
@@ -148,14 +150,13 @@ def import_route_change_info():
             c_line = re.match('^([1-5]) ([^ ]+) ([1-5][物魔]) ([1-5][物魔])$', line)
             if c_line:
                 day = int(c_line.group(1))
-                player = c_line.group(2)
+                player = get_player_short_name(c_line.group(2))
                 before = c_line.group(3)
                 after = c_line.group(4)
                 result += [[day, player, before, after]]
             elif line[0] != '#':
                 print()
                 print(f'[WARN] 読み込みスキップ: {line}')
-                print()
         
         return result
 
@@ -216,7 +217,6 @@ def get_expects(current_day: int) -> list:
         if not org_exists:
             print()
             print(f'[WARN] 変更前の凸予定が存在しません. #凸先変更情報.txtの内容を確認してください: {change}')
-            print()
 
     return result
 
@@ -234,7 +234,6 @@ def get_results(expects: list, actuals: list, current_day: int) -> list:
         if not expect_exists:
             print()
             print(f'[WARN] 予定にない凸実績が存在します. 各テキストファイルの内容を確認してください. 実績: {actual}')
-            print()
     
     expects.sort(key = lambda x: x[4])
 
