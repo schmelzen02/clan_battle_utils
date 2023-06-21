@@ -24,7 +24,7 @@ def import_questionnaire_phase4(expect_damages: dict) -> list:
     print('4段階目アンケート結果を読み込んでいます...')
     result = []
 
-    with open('#4段階目アンケート結果.txt', 'r', encoding='utf-8') as f:
+    with open('#4段階目アンケート結果.txt', 'r') as f:
         is_player_line = False
         for line in f:
             key_line = re.match('^[0-9]+\..*\[([1-5][物魔])\].+$', line)
@@ -37,8 +37,8 @@ def import_questionnaire_phase4(expect_damages: dict) -> list:
                 result += [[boss, player, expect_damages[boss]] for player in line.rstrip(' \r?\n').split(' ')]
                 is_player_line = False
 
-    # debug
-    # print(result)
+    if len(result) != 90:
+        print(f'[WARN] 4段階目アンケートの回答数が異常です. #4段階目アンケート結果.txtの内容を確認してください. 回答数: {len(result)}')
 
     return result
 
@@ -52,7 +52,7 @@ def import_questionnaire_first_day() -> list:
     print('初日アンケート結果を読み込んでいます...')
     result = []
 
-    with open('#初日アンケート結果.txt', 'r', encoding='utf-8') as f:
+    with open('#初日アンケート結果.txt', 'r') as f:
         is_phase4_line = False
         for line in f:
             # 初日アンケートの「5. 4段階目」「6. 朝活貫通」を初日4段階目参加メンバーとしてカウントする
@@ -76,11 +76,11 @@ def import_today_route() -> list:
     print('本日の凸状況を読み込んでいます...')
     result = []
 
-    with open('#本日の凸状況.txt', 'r', encoding='utf-8') as f:
+    with open('#本日の凸状況.txt', 'r') as f:
         for line in f:
             route_line = re.match('^(.+) ([1-5][物魔].+|－)/([1-5][物魔].+|－)/([1-5][物魔].+|－) .+$', line)
             if route_line:
-                # プレイヤー名はアンケート結果にあわせ、utf-8換算で13byte目以降切り捨て
+                # プレイヤー名はアンケート結果にあわせ、1文字3byte換算で13byte目以降切り捨て
                 player = route_line.group(1).encode('utf-8')[0:12].decode('utf-8', errors='ignore')
                 # 1凸目/2凸目/3凸目の本凸先を取得
                 route1 = route_line.group(2)[0:2]
@@ -106,7 +106,7 @@ def import_current_lap() -> list:
     """
     print('現在の周回数を読み込んでいます...')
 
-    with open('#現在の周回数.txt', 'r', encoding='utf-8') as f:
+    with open('#現在の周回数.txt', 'r') as f:
         return [float(line.rstrip('\r|\n')) for line in f.readlines()]
 
 def get_current_day() -> int:
@@ -141,7 +141,7 @@ def import_route_change_info():
 
     print('凸先変更情報を読み込んでいます...')
 
-    with open('#凸先変更情報.txt', 'r', encoding='utf-8') as f:
+    with open('#凸先変更情報.txt', 'r') as f:
         for line in f.readlines():
             c_line = re.match('^([1-5]) ([^ ]+) ([1-5][物魔]) ([1-5][物魔])$', line)
             if c_line:
@@ -151,7 +151,7 @@ def import_route_change_info():
                 after = c_line.group(4)
                 result += [[day, player, before, after]]
             elif line[0] != '#':
-                print(f'[WARN]読み込みスキップ: {line}')
+                print(f'[WARN] 読み込みスキップ: {line}')
         
         return result
 
@@ -164,7 +164,7 @@ def import_expect_damages() -> dict:
     """
     print('各編成の平均ダメージを読み込んでいます...')
 
-    with open('#各編成の平均ダメージ.txt', 'r', encoding='utf-8') as f:
+    with open('#各編成の平均ダメージ.txt', 'r') as f:
         return {line[:2]: int(line[3:].rstrip('\r|\n')) for line in f.readlines() if re.match('^[1-5][物魔] [0-9]+$', line)}
  
 def get_expects(current_day: int) -> list:
@@ -183,17 +183,16 @@ def get_expects(current_day: int) -> list:
     # 4段階目アンケート結果の読み込み
     questionnaire_phase4 = import_questionnaire_phase4(expect_damages)
 
-    if current_day == 1:
-        # クラバト初日の場合、初日4段階目参加メンバーを取得
-        questionnaire_first_day = import_questionnaire_first_day()
+    # クラバト初日の場合、初日4段階目参加メンバーを取得
+    questionnaire_first_day = import_questionnaire_first_day()
 
-        # 初日4段階目予定を結果リストに追加
-        for player in questionnaire_first_day:
-            result += [[1] + phase4 + [''] for phase4 in questionnaire_phase4 if phase4[1] == player]
+    # 初日4段階目予定を結果リストに追加
+    for player in questionnaire_first_day:
+        result += [[1] + phase4 + (['済'] if current_day > 1 else ['']) for phase4 in questionnaire_phase4 if phase4[1] == player]
         
-    # 現在のクラバト日付以降の4段階目凸予定を結果リストに追加
-    for day in range(max(current_day, 2), 6):
-        result += [[day] + phase4 + [''] for phase4 in questionnaire_phase4]
+    # 2日目以降の4段階目凸予定を結果リストに追加
+    for day in range(2, 6):
+        result += [[day] + phase4 + (['済'] if current_day > day else ['']) for phase4 in questionnaire_phase4]
 
     # 凸先変更情報の読み込み
     route_change_info = import_route_change_info()
@@ -211,11 +210,11 @@ def get_expects(current_day: int) -> list:
                 org_exists = True
                 break
         if not org_exists:
-            print(f'[WARN]変更前の凸予定が存在しません. #凸先変更情報.txtの内容を確認してください: {change}')
+            print(f'[WARN] 変更前の凸予定が存在しません. #凸先変更情報.txtの内容を確認してください: {change}')
 
     return result
 
-def get_results(expects: list, actuals: list) -> list:
+def get_results(expects: list, actuals: list, current_day: int) -> list:
     for actual in actuals:
         expect_exists = False
         for expect in expects:
@@ -227,7 +226,7 @@ def get_results(expects: list, actuals: list) -> list:
                 expect_exists = True
                 break
         if not expect_exists:
-            print(f'[WARN]凸予定にない凸実績が存在します. 各テキストファイルの内容を確認してください. 実績: {actual}')
+            print(f'[WARN] 予定にない凸実績が存在します. 各テキストファイルの内容を確認してください. 実績: {actual}')
     
     expects.sort(key = lambda x: x[4])
 
@@ -240,7 +239,7 @@ def aggregate_today(results: list, current_day: int, current_lap: list, boss_hp:
         if result[0] == current_day and result[4] == '':
             aggregate_results[int(result[1][0]) -1] += result[3]
 
-    return [round(aggregate_results[i] / boss_hp[i], 1) + current_lap[i] for i in range(0, 5)]
+    return [round(aggregate_results[i] / boss_hp[i] + current_lap[i], 1) for i in range(0, 5)]
 
 def aggregate_all(results: list, current_lap: list, boss_hp: list) :
     # [1, '1魔', 'player1', 5600, '済']
@@ -249,7 +248,7 @@ def aggregate_all(results: list, current_lap: list, boss_hp: list) :
         if result[4] == '':
             aggregate_results[int(result[1][0]) -1] += result[3]
 
-    return [round(aggregate_results[i] / boss_hp[i], 1) + current_lap[i] for i in range(0, 5)]
+    return [round(aggregate_results[i] / boss_hp[i] + current_lap[i], 1) for i in range(0, 5)]
 
 ################################################################################
 # 処理本体
@@ -264,7 +263,7 @@ actuals = import_today_route()
 current_lap = import_current_lap()
 
 # 全日程の凸消化状況を取得
-results = get_results(expects, actuals)
+results = get_results(expects, actuals, current_day)
 
 # 本日着地見込みを取得
 aggregate_today_result = aggregate_today(results, current_day, current_lap, boss_hp)
