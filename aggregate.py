@@ -32,7 +32,7 @@ def import_questionnaire_phase4(expect_damages: dict) -> list:
                 # 「1. ゴブグレ[1物]」形式の行をタイトル行として読み込み
                 boss = key_line.group(1)
                 is_player_line = True
-            elif is_player_line:
+            elif is_player_line and line.rstrip(' \r?\n') != '':
                 # タイトル行の直後の行をアンケート結果行として読み込み
                 result += [[boss, player, expect_damages[boss]] for player in line.rstrip(' \r?\n').split(' ')]
                 is_player_line = False
