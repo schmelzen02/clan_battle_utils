@@ -221,7 +221,7 @@ def get_results(expects: list, actuals: list, current_day: int) -> list:
             # 凸予定と凸実績を突合する
             # expect[day, boss, player, damage]
             # actual[player, boss]
-            if expect[0] == current_day and expect[2] == actual[0] and expect[1] == actual[1]:
+            if expect[0] == current_day and expect[2] == actual[0] and expect[1] == actual[1] and expect[4] != '済':
                 expect[4] = '済'
                 expect_exists = True
                 break
